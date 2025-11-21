@@ -53,25 +53,31 @@ This is a fully functional e-commerce frontend built with **Next.js (App Router,
 1. Clone the repository:
 
 ```bash
-git clone <repository-url>
-cd <project-folder>
+git clone https://github.com/mahmoudmowakeel/MitchDesignTask.git
+cd project-folder
 npm install
 cp .env.example .env -- Provide API URL
-npm run run dev
 ```
 
 ## API Endpoints Used
+
 - For All Products
+
+```bash
 - GET /products
 - Query Params: size, brand, status, min_price, max_price, min_rating, sort_by, sort_order
 - Headers: Accept-Language
-
+```
 
 - For Single Product
+
+```bash
 - GET /products/{id}
 - Headers: Accept-Language
+```
 
 ## How To Run The Project
+
 ```bash
 npm run run dev
 ```
@@ -79,4 +85,3 @@ npm run run dev
 ## Future improvements
 
 - API need to be fixed because when sending "en" it returns the french response.
-

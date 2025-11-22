@@ -1,6 +1,7 @@
 import FilterSpanButton from "./FilterSpanButton";
 import { ChevronRight } from "lucide-react";
 import { useAppContext } from "../../context/AppContext";
+import { useState } from "react";
 
 interface CollapseComponentType {
   title: string;
@@ -11,6 +12,8 @@ export default function CollapseFilterComponent({
   title,
   filters,
 }: CollapseComponentType) {
+  const [collapsed, setCollapsed] = useState<boolean>(true);
+
   const {
     setSelectedFilters,
     tempFilters,
@@ -30,91 +33,102 @@ export default function CollapseFilterComponent({
   };
   return (
     <div className="border border-[rgba(243,243,243,1)] flex flex-col gap-[18px] w-full rounded-[10px] py-5 px-3.5 md:py-2.5 md:px-[7px]">
-      <div>
+      <div className="flex justify-between">
         <h1 className="text-[18px] font-semibold">{title}</h1>
+        <span
+          className="text-2xl mr-4 cursor-pointer"
+          onClick={() => setCollapsed((prev) => !prev)}
+        >
+          {collapsed ? "+" : "-"}
+        </span>
       </div>
-      <div>
-        <ul className="flex w-full gap-2">
-          {}
-          {filters.map((filter) => (
-            <li
-              onClick={() => {
-                setTempFilters((prev) => {
-                  const t = title.toLowerCase();
-                  if (t == "price") {
-                    const isSelected = selectedPrices.includes(filter);
+      {collapsed ? (
+        ""
+      ) : (
+        <div>
+          <ul className="flex w-full gap-2">
+            {}
+            {filters.map((filter) => (
+              <li
+                onClick={() => {
+                  setTempFilters((prev) => {
+                    const t = title.toLowerCase();
+                    if (t == "price") {
+                      const isSelected = selectedPrices.includes(filter);
 
-                    const updated = isSelected
-                      ? selectedPrices.filter((p) => p !== filter)
-                      : [...selectedPrices, filter];
+                      const updated = isSelected
+                        ? selectedPrices.filter((p) => p !== filter)
+                        : [...selectedPrices, filter];
 
-                    setSelectedPrices(updated);
-                    if (updated.length === 0) {
+                      setSelectedPrices(updated);
+                      if (updated.length === 0) {
+                        return {
+                          ...prev,
+                          min_price: undefined,
+                          max_price: undefined,
+                        };
+                      }
+                      const mins: number[] = [];
+                      const maxs: number[] = [];
+
+                      updated.forEach((priceLabel) => {
+                        const { min, max } =
+                          priceRanges[priceLabel as keyof typeof priceRanges];
+
+                        if (min !== undefined) mins.push(min);
+                        if (max !== undefined) maxs.push(max);
+                      });
+
+                      const globalMin = mins.length ? Math.min(...mins) : 0;
+                      const globalMax = maxs.length
+                        ? Math.max(...maxs)
+                        : undefined;
+
                       return {
                         ...prev,
-                        min_price: undefined,
-                        max_price: undefined,
+                        min_price: globalMin,
+                        max_price: globalMax,
                       };
                     }
-                    const mins: number[] = [];
-                    const maxs: number[] = [];
 
-                    updated.forEach((priceLabel) => {
-                      const { min, max } =
-                        priceRanges[priceLabel as keyof typeof priceRanges];
+                    if (t === "size") {
+                      const modifiedSize =
+                        filter == "X Small"
+                          ? "XS"
+                          : filter == "Small"
+                          ? "S"
+                          : filter == "Medium"
+                          ? "M"
+                          : filter == "Large"
+                          ? "L"
+                          : filter == "X Large"
+                          ? "XL"
+                          : "";
+                      return {
+                        ...prev,
+                        size: prev.size == modifiedSize ? "" : modifiedSize,
+                      };
+                    }
 
-                      if (min !== undefined) mins.push(min);
-                      if (max !== undefined) maxs.push(max);
-                    });
+                    if (t === "rating") {
+                      return {
+                        ...prev,
+                        min_rating: filter,
+                      };
+                    }
 
-                    const globalMin = mins.length ? Math.min(...mins) : 0;
-                    const globalMax = maxs.length
-                      ? Math.max(...maxs)
-                      : undefined;
+                    return prev;
+                  });
+                }}
+                key={filter}
+              >
+                <FilterSpanButton filter={filter} />
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
-                    return {
-                      ...prev,
-                      min_price: globalMin,
-                      max_price: globalMax,
-                    };
-                  }
-
-                  if (t === "size") {
-                    const modifiedSize =
-                      filter == "X Small"
-                        ? "XS"
-                        : filter == "Small"
-                        ? "S"
-                        : filter == "Medium"
-                        ? "M"
-                        : filter == "Large"
-                        ? "L"
-                        : filter == "X Large"
-                        ? "XL"
-                        : "";
-                    return {
-                      ...prev,
-                      size: prev.size == modifiedSize ? "" : modifiedSize,
-                    };
-                  }
-
-                  if (t === "rating") {
-                    return {
-                      ...prev,
-                      min_rating: filter,
-                    };
-                  }
-
-                  return prev;
-                });
-              }}
-              key={filter}
-            >
-              <FilterSpanButton filter={filter} />
-            </li>
-          ))}
-        </ul>
-      </div>
       <div className="fixed bottom-3 right-0  px-5 flex  justify-between items-center w-full gap-3">
         <button
           onClick={() => {
